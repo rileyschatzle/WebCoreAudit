@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - following Creative-Direction.md */
+    --background: 240 5% 97%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 240 5% 92%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 240 5% 92%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.625rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Glassmorphism utilities - Light mode */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-[20px] border border-black/[0.06] rounded-[16px];
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-[40px] border border-black/[0.06] rounded-[20px];
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .glass-input {
+    @apply bg-white border border-black/[0.1] rounded-[12px];
+  }
+
+  .glass-input:focus {
+    @apply border-[rgba(59,130,246,0.5)] outline-none;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+
+  /* Gradient backgrounds */
+  .bg-glow {
+    background: radial-gradient(circle at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 50%);
+  }
+
+  .bg-glow-center {
+    background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.06) 0%, transparent 50%);
+  }
+
+  /* Card shine effect */
+  .card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  }
+
+  /* Skeleton loader animation */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(0,0,0,0.03) 25%,
+      rgba(0,0,0,0.06) 50%,
+      rgba(0,0,0,0.03) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible styling for accessibility */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3B82F6;
+}

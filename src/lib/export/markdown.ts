@@ -1,0 +1,157 @@
+import { AuditResult, CategoryScore, PageScore } from '@/lib/types/audit';
+
+function getGrade(score: number): string {
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  return 'F';
+}
+
+function getSeverityEmoji(severity: string): string {
+  switch (severity) {
+    case 'critical': return '🔴';
+    case 'warning': return '🟡';
+    case 'info': return '🔵';
+    default: return '⚪';
+  }
+}
+
+function formatCategorySection(category: CategoryScore): string {
+  const criticalIssues = category.issues.filter(i => i.severity === 'critical');
+  const warningIssues = category.issues.filter(i => i.severity === 'warning' || i.severity === 'info');
+  const passing = category.passing || [];
+
+  let section = `### ${category.name}\n\n`;
+  section += `**Score:** ${category.score}/100 (Grade: ${getGrade(category.score)})\n\n`;
+
+  // Critical Issues
+  if (criticalIssues.length > 0) {
+    section += `#### Critical Issues (${criticalIssues.length})\n\n`;
+    criticalIssues.forEach(issue => {
+      section += `- ${getSeverityEmoji('critical')} **${issue.title}**\n`;
+      section += `  - ${issue.description}\n`;
+      if (issue.impact) section += `  - *Impact:* ${issue.impact}\n`;
+      section += '\n';
+    });
+  }
+
+  // Warning Issues
+  if (warningIssues.length > 0) {
+    section += `#### Warnings (${warningIssues.length})\n\n`;
+    warningIssues.forEach(issue => {
+      section += `- ${getSeverityEmoji(issue.severity)} **${issue.title}**\n`;
+      section += `  - ${issue.description}\n`;
+      if (issue.impact) section += `  - *Impact:* ${issue.impact}\n`;
+      section += '\n';
+    });
+  }
+
+  // Passing Items
+  if (passing.length > 0) {
+    section += `#### Passing (${passing.length})\n\n`;
+    passing.forEach(item => {
+      section += `- ✅ **${item.title}**`;
+      if (item.value) section += ` (${item.value})`;
+      section += '\n';
+      section += `  - ${item.description}\n`;
+      section += '\n';
+    });
+  }
+
+  // Recommendations
+  if (category.recommendations.length > 0) {
+    section += `#### Recommendations\n\n`;
+    category.recommendations.forEach((rec, i) => {
+      section += `${i + 1}. ${rec}\n`;
+    });
+    section += '\n';
+  }
+
+  return section;
+}
+
+function formatPageSection(pages: PageScore[], bestPage: PageScore | null, worstPage: PageScore | null): string {
+  if (pages.length === 0) return '';
+
+  let section = `## Page Analysis\n\n`;
+  section += `**Pages Analyzed:** ${pages.length}\n\n`;
+
+  if (bestPage) {
+    section += `**Best Page:** ${bestPage.path} (Score: ${bestPage.overallScore})\n`;
+  }
+  if (worstPage && worstPage.path !== bestPage?.path) {
+    section += `**Needs Improvement:** ${worstPage.path} (Score: ${worstPage.overallScore})\n`;
+  }
+  section += '\n';
+
+  section += `### All Pages\n\n`;
+  section += `| Page | Score | Grade |\n`;
+  section += `|------|-------|-------|\n`;
+
+  const sortedPages = [...pages].sort((a, b) => b.overallScore - a.overallScore);
+  sortedPages.forEach(page => {
+    section += `| ${page.path} | ${page.overallScore} | ${getGrade(page.overallScore)} |\n`;
+  });
+  section += '\n';
+
+  return section;
+}
+
+export function generateMarkdownReport(result: AuditResult): string {
+  const date = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  let markdown = `# Website Audit Report\n\n`;
+  markdown += `**URL:** ${result.url}\n`;
+  markdown += `**Date:** ${date}\n`;
+  markdown += `**Overall Score:** ${result.overallScore}/100 (Grade: ${getGrade(result.overallScore)})\n\n`;
+
+  // Executive Summary
+  markdown += `## Executive Summary\n\n`;
+  markdown += `${result.summary}\n\n`;
+
+  // Score Overview
+  markdown += `## Score Overview\n\n`;
+  markdown += `| Category | Score | Grade |\n`;
+  markdown += `|----------|-------|-------|\n`;
+  result.categories.forEach(cat => {
+    markdown += `| ${cat.name} | ${cat.score} | ${getGrade(cat.score)} |\n`;
+  });
+  markdown += '\n';
+
+  // Critical Issues Summary
+  const allCriticalIssues = result.categories.flatMap(c =>
+    c.issues.filter(i => i.severity === 'critical').map(i => ({
+      category: c.name,
+      ...i
+    }))
+  );
+
+  if (allCriticalIssues.length > 0) {
+    markdown += `## Critical Issues (${allCriticalIssues.length})\n\n`;
+    allCriticalIssues.forEach(issue => {
+      markdown += `- 🔴 **${issue.title}** (${issue.category})\n`;
+      markdown += `  - ${issue.description}\n\n`;
+    });
+  }
+
+  // Page Analysis
+  markdown += formatPageSection(result.pagesAnalyzed, result.bestPage, result.worstPage);
+
+  // Detailed Category Analysis
+  markdown += `## Detailed Analysis\n\n`;
+  result.categories.forEach(category => {
+    markdown += formatCategorySection(category);
+    markdown += '---\n\n';
+  });
+
+  // Footer
+  markdown += `---\n\n`;
+  markdown += `*Generated by WebCore Audit on ${date}*\n`;
+
+  return markdown;
+}
