@@ -5,6 +5,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 // Coming Soon Mode - set to false to disable splash page redirect
 const COMING_SOON_MODE = true;
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+
 // Routes that require Supabase Auth (user accounts)
 const userProtectedRoutes = ['/dashboard', '/profile', '/settings', '/my-audits'];
 
@@ -22,8 +25,8 @@ async function handleSupabaseAuth(request: NextRequest) {
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {
