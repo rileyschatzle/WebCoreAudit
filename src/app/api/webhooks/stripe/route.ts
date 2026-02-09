@@ -219,7 +219,8 @@ async function handleInvoicePaid(
   }
 
   // Check if this is a one-time pack purchase (no subscription)
-  if (!invoice.subscription) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(invoice as any).subscription) {
     // This might be an audit pack purchase - check line items
     const lineItems = invoice.lines?.data || [];
     for (const item of lineItems) {
