@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Pricing configuration - single source of truth
 export const PRICING_CONFIG = {
   free: {

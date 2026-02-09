@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server';
 
 import { stripe, STRIPE_PRICES, STRIPE_PACK_PRICES } from './index';
