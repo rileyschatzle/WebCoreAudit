@@ -222,9 +222,11 @@ async function handleInvoicePaid(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!(invoice as any).subscription) {
     // This might be an audit pack purchase - check line items
-    const lineItems = invoice.lines?.data || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lineItems = (invoice as any).lines?.data || [];
     for (const item of lineItems) {
-      const packInfo = getPackFromPriceId(item.price?.id || '');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const packInfo = getPackFromPriceId((item as any).price?.id || '');
       if (packInfo) {
         await addPurchasedAudits(profile.id, packInfo.audits);
         console.log(`User ${profile.id} purchased ${packInfo.audits} audit credits via invoice`);
