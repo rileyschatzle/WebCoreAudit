@@ -66,14 +66,16 @@ export async function POST(req: Request) {
     }
 
     // Log the event for audit trail
-    await supabase.from('subscription_events').insert({
-      stripe_event_id: event.id,
-      event_type: event.type,
-      metadata: event.data.object as unknown as Record<string, unknown>,
-    }).catch(err => {
+    try {
+      await supabase.from('subscription_events').insert({
+        stripe_event_id: event.id,
+        event_type: event.type,
+        metadata: event.data.object as unknown as Record<string, unknown>,
+      });
+    } catch (err) {
       // Table might not exist yet, log but don't fail
       console.warn('Failed to log subscription event:', err);
-    });
+    }
 
     return NextResponse.json({ received: true });
   } catch (err) {
