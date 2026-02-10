@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Get all users with active subscriptions
-    const { data: subscriptions, error } = await supabaseAdmin
+    const { data: subscriptions, error } = await getSupabaseAdminOrMock()
       .from('user_profiles')
       .select('*')
       .not('stripe_subscription_id', 'is', null)
