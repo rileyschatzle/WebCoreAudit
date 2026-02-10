@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdminOrMock } from '@/lib/supabase/admin-client';
 
-const supabaseAdmin = createClient(
+// Lazy init
+const getClient = () => getSupabaseAdminOrMock();
+const supabaseAdmin = null; // getSupabaseAdminOrMock()
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -21,7 +23,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const { data: websiteType, error } = await supabaseAdmin
+    const { data: websiteType, error } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .select('*')
       .eq('id', id)
@@ -32,7 +34,7 @@ export async function GET(
     }
 
     // Get audit count
-    const { count } = await supabaseAdmin
+    const { count } = await getSupabaseAdminOrMock()
       .from('audits')
       .select('*', { count: 'exact', head: true })
       .eq('website_type_id', id);
@@ -65,7 +67,7 @@ export async function PUT(
     const { name, description, icon, categoryWeights, focusAreas, bestPractices, isActive, isDefault } = body;
 
     // Check if website type exists
-    const { data: existing, error: fetchError } = await supabaseAdmin
+    const { data: existing, error: fetchError } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .select('*')
       .eq('id', id)
@@ -79,7 +81,7 @@ export async function PUT(
     let slug = existing.slug;
     if (name && name !== existing.name) {
       slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const { data: slugConflict } = await supabaseAdmin
+      const { data: slugConflict } = await getSupabaseAdminOrMock()
         .from('WebsiteType')
         .select('id')
         .eq('slug', slug)
@@ -93,14 +95,14 @@ export async function PUT(
 
     // If this is being set as default, unset any existing default
     if (isDefault && !existing.isDefault) {
-      await supabaseAdmin
+      await getSupabaseAdminOrMock()
         .from('WebsiteType')
         .update({ isDefault: false })
         .eq('isDefault', true)
         .neq('id', id);
     }
 
-    const { data: websiteType, error } = await supabaseAdmin
+    const { data: websiteType, error } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .update({
         name: name || existing.name,
@@ -144,7 +146,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Check if website type exists and has audits
-    const { data: existing, error: fetchError } = await supabaseAdmin
+    const { data: existing, error: fetchError } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .select('*')
       .eq('id', id)
@@ -155,7 +157,7 @@ export async function DELETE(
     }
 
     // Check audit count
-    const { count } = await supabaseAdmin
+    const { count } = await getSupabaseAdminOrMock()
       .from('audits')
       .select('*', { count: 'exact', head: true })
       .eq('website_type_id', id);
@@ -168,7 +170,7 @@ export async function DELETE(
       );
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .delete()
       .eq('id', id);

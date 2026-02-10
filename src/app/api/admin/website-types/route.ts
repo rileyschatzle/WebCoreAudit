@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const includeInactive = searchParams.get('includeInactive') === 'true';
 
-    let query = supabaseAdmin
+    let query = getSupabaseAdminOrMock()
       .from('WebsiteType')
       .select('*')
       .order('isDefault', { ascending: false })
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get audit counts for each website type
-    const { data: auditCounts } = await supabaseAdmin
+    const { data: auditCounts } = await getSupabaseAdminOrMock()
       .from('audits')
       .select('website_type_id')
       .not('website_type_id', 'is', null);
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     // Check if slug already exists
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .select('id')
       .eq('slug', slug)
@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
 
     // If this is being set as default, unset any existing default
     if (isDefault) {
-      await supabaseAdmin
+      await getSupabaseAdminOrMock()
         .from('WebsiteType')
         .update({ isDefault: false })
         .eq('isDefault', true);
     }
 
-    const { data: websiteType, error } = await supabaseAdmin
+    const { data: websiteType, error } = await getSupabaseAdminOrMock()
       .from('WebsiteType')
       .insert({
         name,

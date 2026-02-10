@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if email already exists in Supabase
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabaseAdminOrMock()
       .from('email_subscribers')
       .select('id')
       .eq('email', normalizedEmail)
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       // Update audit URL if provided
       if (auditUrl) {
-        await supabaseAdmin
+        await getSupabaseAdminOrMock()
           .from('email_subscribers')
           .update({ audit_url: auditUrl })
           .eq('id', existing.id);
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new subscriber in Supabase
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdminOrMock()
       .from('email_subscribers')
       .insert({
         email: normalizedEmail,

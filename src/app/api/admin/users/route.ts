@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build query
-    let query = supabaseAdmin
+    let query = getSupabaseAdminOrMock()
       .from('user_profiles')
       .select('*', { count: 'exact' });
 

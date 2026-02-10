@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if already subscribed
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabaseAdminOrMock()
       .from('email_subscribers')
       .select('id, unsubscribed_at')
       .eq('email', normalizedEmail)
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     if (existing && existing.unsubscribed_at) {
       // Was unsubscribed, re-subscribe
-      await supabaseAdmin
+      await getSupabaseAdminOrMock()
         .from('email_subscribers')
         .update({
           unsubscribed_at: null,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // New subscriber
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdminOrMock()
       .from('email_subscribers')
       .insert({
         email: normalizedEmail,
