@@ -138,6 +138,7 @@ export async function middleware(request: NextRequest) {
       '/api/',
       '/_next/',
       '/favicon.ico',
+      '/audit',  // Allow audit page (admin can use it)
     ];
 
     const isAllowed = allowedPaths.some(path => pathname.startsWith(path)) ||
